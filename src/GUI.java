@@ -1,40 +1,38 @@
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.nio.file.Paths;
+import java.util.TreeMap;
 
 
 public class GUI extends JFrame {
 
-    public static HashMap<String, Integer> riders = new HashMap<>();
-
-    private boolean isRuning = false;
-
-    JPanel secuencialPanel, concurrentPanel, parallelPanel;
-
-    JSpinner secuencialSpinner, concurrentSpinner, parallelSpinner;
+    public static TreeMap<String, Integer> riders = new TreeMap<>();
+    public int sequentialSpinnerValue, concurrentSpinnerValue, parallelSpinnerValue;
+    private boolean isRunning = false;
+    private BufferedImage runwayBuffer, donkeyBuffer, horseBuffer, unicornBuffer;
+    private short yAxisHorse = 20;
+    String currentRelativePath;
 
     public GUI() {
-        super("Hipodromo");
+        super("Hippodrome");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new GridLayout(0, 1));
         setSize(250, 200);
         setVisible(true);
         setResizable(false);
-        secuencialPanel = new JPanel();
-        concurrentPanel = new JPanel();
-        parallelPanel = new JPanel();
 
-        secuencialPanel.add(new JLabel("Secunecial"));
+        currentRelativePath = Paths.get("").toAbsolutePath().toString();
+        JPanel sequentialPanel = new JPanel();
+        JPanel concurrentPanel = new JPanel();
+        JPanel parallelPanel = new JPanel();
+
+        sequentialPanel.add(new JLabel("Secunecial"));
         JSpinner secuencialSpinner = new JSpinner(new SpinnerNumberModel(2, 1, 3, 1));
-        secuencialPanel.add(secuencialSpinner);
+        sequentialPanel.add(secuencialSpinner);
 
 
         concurrentPanel.add(new JLabel("Concurrent"));
@@ -46,16 +44,15 @@ public class GUI extends JFrame {
         JSpinner parallelSpinner = new JSpinner(new SpinnerNumberModel(2, 1, 3, 1));
         parallelPanel.add(parallelSpinner);
 
+
         Button starRide = new Button("Start");
-        starRide.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                isRuning = true;
-                ChangeInitialLayout(secuencialSpinner, concurrentSpinner, parallelSpinner);
-            }
+        starRide.addActionListener((actionEvent) -> {
+            isRunning = true;
+            GetSpinnersValues(secuencialSpinner, concurrentSpinner, parallelSpinner);
+            setupGUI();
         });
 
-        add(secuencialPanel);
+        add(sequentialPanel);
         add(concurrentPanel);
         add(parallelPanel);
         add(starRide);
@@ -63,85 +60,123 @@ public class GUI extends JFrame {
 
     @Override
     public void paint(Graphics g) {
-        if (isRuning) {
-            paintBackgroud();
+        if (isRunning) {
+            paintLocations();
         }
-
     }
 
-    private void ChangeInitialLayout(JSpinner secuentialSpinner, JSpinner concurrentSpinner, JSpinner parallelSpinner) {
+    public void paintLocations() {
+        this.getGraphics().drawImage(runwayBuffer, 9, 31, this);
+        riders.forEach((key, value) -> {
+
+            switch (key) {
+                case "A1":
+                    getGraphics().drawImage(donkeyBuffer, value, yAxisHorse, this);
+                    break;
+                case "A2":
+                    getGraphics().drawImage(donkeyBuffer, value, yAxisHorse, this);
+                    break;
+                case "A3":
+                    getGraphics().drawImage(donkeyBuffer, value, yAxisHorse, this);
+                    break;
+                case "B1":
+                    getGraphics().drawImage(horseBuffer, value, yAxisHorse, this);
+                    break;
+                case "B2":
+                    getGraphics().drawImage(horseBuffer, value, yAxisHorse, this);
+                    break;
+                case "B3":
+                    getGraphics().drawImage(horseBuffer, value, yAxisHorse, this);
+                    break;
+                case "C1":
+                    getGraphics().drawImage(unicornBuffer, value, yAxisHorse, this);
+                    break;
+                case "C2":
+                    getGraphics().drawImage(unicornBuffer, value, yAxisHorse, this);
+                    break;
+                case "C3":
+                    getGraphics().drawImage(unicornBuffer, value, yAxisHorse, this);
+                    break;
+            }
+            yAxisHorse+=100;
+        });
+        yAxisHorse=20;
+    }
+
+    private void setupGUI() {
         this.removeAll();
+        setSize(1200 + 17, (sequentialSpinnerValue + concurrentSpinnerValue + parallelSpinnerValue) * 100 + 39);
+        runwayBuffer = new BufferedImage(1200, getHeight(), BufferedImage.TYPE_INT_ARGB);
+        donkeyBuffer = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB);
+        horseBuffer = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB);
+        unicornBuffer = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB);
 
-        for (int secuentialHorsesQty = 1; secuentialHorsesQty <= (int) secuentialSpinner.getValue(); secuentialHorsesQty++) {
-            riders.put("S" + secuentialHorsesQty, 0);
-        }
-
-        for (int secuentialHorsesQty = 1; secuentialHorsesQty <= (int) secuentialSpinner.getValue(); secuentialHorsesQty++) {
-            riders.put("C" + secuentialHorsesQty, 0);
-        }
-
-        for (int secuentialHorsesQty = 1; secuentialHorsesQty <= (int) secuentialSpinner.getValue(); secuentialHorsesQty++) {
-            riders.put("P" + secuentialHorsesQty, 0);
-        }
-
-
-        setSize(1200,  + 20);
-        paintBackgroud();
-
-
+        fillRidersHasMap();
+        setRoads();
+        setHorses();
+//        JOptionPane.showMessageDialog(null, new JLabel(new ImageIcon(runwayImage)));
     }
 
-    public void paintBackgroud() {
+    private void setRoads() {
+        short currentYAxis = 0;
 
-        BufferedImage runwayImage = new BufferedImage(1200, 100, BufferedImage.TYPE_INT_RGB);
-        BufferedImage horseImage = new BufferedImage(128, 128, BufferedImage.TYPE_INT_RGB);
-
-        int currentYAxis = 20;
-
-        for (int paintedHorse = 1; paintedHorse <= secuentialHorses; paintedHorse++) {
+        for (short paintedHorse = 1; paintedHorse <= sequentialSpinnerValue; paintedHorse++) {
             try {
-                runwayImage = ImageIO.read(new File("" +
-                        "C:\\Users\\235921\\Documents\\Github\\src\\Utilities\\S" + paintedHorse + ".png"));
-                horseImage = ImageIO.read(new File("" +
-                        "C:\\Users\\235921\\Documents\\Github\\src\\Utilities\\Donky.png"));
+                runwayBuffer.getGraphics().drawImage(ImageIO.read(new File(currentRelativePath + "\\src\\Utilities\\S" + paintedHorse + ".png")), 0, currentYAxis, this);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            this.getGraphics().drawImage(runwayImage, 0, currentYAxis + 1, this);
-            this.getGraphics().drawImage(horseImage, 0, currentYAxis + 1, this);
-
             currentYAxis += 100;
         }
 
-        for (int paintedHorse = 1; paintedHorse <= concurrentHorses; paintedHorse++) {
-
+        for (short paintedHorse = 1; paintedHorse <= concurrentSpinnerValue; paintedHorse++) {
             try {
-                runwayImage = ImageIO.read(new File("" +
-                        "C:\\Users\\235921\\Documents\\Github\\src\\Utilities\\C" + paintedHorse + ".png"));
-                horseImage = ImageIO.read(new File("" +
-                        "C:\\Users\\235921\\Documents\\Github\\src\\Utilities\\Horse.png"));
+                runwayBuffer.getGraphics().drawImage(ImageIO.read(new File(currentRelativePath + "\\src\\Utilities\\C" + paintedHorse + ".png")), 0, currentYAxis, this);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            this.getGraphics().drawImage(runwayImage, 0, currentYAxis, this);
-            this.getGraphics().drawImage(horseImage, 0, currentYAxis + 1, this);
             currentYAxis += 100;
         }
 
-        for (int paintedHorse = 1; paintedHorse <= parallelHorses; paintedHorse++) {
-
+        for (short paintedHorse = 1; paintedHorse <= parallelSpinnerValue; paintedHorse++) {
             try {
-                runwayImage = ImageIO.read(new File("" +
-                        "C:\\Users\\235921\\Documents\\Github\\src\\Utilities\\P" + paintedHorse + ".png"));
-                horseImage = ImageIO.read(new File("" +
-                        "C:\\Users\\235921\\Documents\\Github\\src\\Utilities\\Unicorn.png"));
+                runwayBuffer.getGraphics().drawImage(ImageIO.read(new File(currentRelativePath + "\\src\\Utilities\\P" + paintedHorse + ".png")), 0, currentYAxis, this);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            this.getGraphics().drawImage(runwayImage, 0, currentYAxis, this);
-            this.getGraphics().drawImage(horseImage, 0, currentYAxis + 1, this);
             currentYAxis += 100;
         }
     }
 
+    private void setHorses() {
+        try {
+            donkeyBuffer.getGraphics().drawImage(ImageIO.read(new File(currentRelativePath + "\\src\\Utilities\\Donkey.png")), 0, 0, this);
+            horseBuffer.getGraphics().drawImage(ImageIO.read(new File(currentRelativePath + "\\src\\Utilities\\Horse.png")), 0, 0, this);
+            unicornBuffer.getGraphics().drawImage(ImageIO.read(new File(currentRelativePath + "\\src\\Utilities\\Unicorn.png")), 0, 0, this);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void fillRidersHasMap() {
+
+        for (int HorsesQty = 1; HorsesQty <= sequentialSpinnerValue; HorsesQty++) {
+            riders.put("A" + HorsesQty, 0);
+        }
+
+        for (int HorsesQty = 1; HorsesQty <= concurrentSpinnerValue; HorsesQty++) {
+            riders.put("B" + HorsesQty, 0);
+        }
+
+        for (int HorsesQty = 1; HorsesQty <= parallelSpinnerValue; HorsesQty++) {
+            riders.put("C" + HorsesQty, 0);
+        }
+
+    }
+
+    private void GetSpinnersValues(JSpinner secuencialSpinner, JSpinner concurrentSpinner, JSpinner parallelSpinner) {
+        sequentialSpinnerValue = (int) secuencialSpinner.getValue();
+        concurrentSpinnerValue = (int) concurrentSpinner.getValue();
+        parallelSpinnerValue = (int) parallelSpinner.getValue();
+    }
 }
