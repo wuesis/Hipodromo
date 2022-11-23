@@ -7,13 +7,13 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class GUI extends JFrame {
 
-    public static int secuentialHorses, concurrentHorses, parallelHorses;
-
-    public static ArrayList<Integer> secuentialDistancesList, ConcurrentDistancesList, parallelDistancesList;
+    public static HashMap<String, Integer> riders = new HashMap<>();
 
     private boolean isRuning = false;
 
@@ -72,10 +72,20 @@ public class GUI extends JFrame {
     private void ChangeInitialLayout(JSpinner secuentialSpinner, JSpinner concurrentSpinner, JSpinner parallelSpinner) {
         this.removeAll();
 
-        secuentialHorses = (int) secuentialSpinner.getValue();
-        concurrentHorses = (int) concurrentSpinner.getValue();
-        parallelHorses = (int) parallelSpinner.getValue();
-        setSize(1200, secuentialHorses * 100 + concurrentHorses * 100 + parallelHorses * 100 + 20);
+        for (int secuentialHorsesQty = 1; secuentialHorsesQty <= (int) secuentialSpinner.getValue(); secuentialHorsesQty++) {
+            riders.put("S" + secuentialHorsesQty, 0);
+        }
+
+        for (int secuentialHorsesQty = 1; secuentialHorsesQty <= (int) secuentialSpinner.getValue(); secuentialHorsesQty++) {
+            riders.put("C" + secuentialHorsesQty, 0);
+        }
+
+        for (int secuentialHorsesQty = 1; secuentialHorsesQty <= (int) secuentialSpinner.getValue(); secuentialHorsesQty++) {
+            riders.put("P" + secuentialHorsesQty, 0);
+        }
+
+
+        setSize(1200,  + 20);
         paintBackgroud();
 
 
@@ -91,14 +101,14 @@ public class GUI extends JFrame {
         for (int paintedHorse = 1; paintedHorse <= secuentialHorses; paintedHorse++) {
             try {
                 runwayImage = ImageIO.read(new File("" +
-                        "C:\\Users\\wuesi\\IdeaProjects\\Hipodromo\\src\\Utilities\\S" + paintedHorse + ".png"));
+                        "C:\\Users\\235921\\Documents\\Github\\src\\Utilities\\S" + paintedHorse + ".png"));
                 horseImage = ImageIO.read(new File("" +
-                        "C:\\Users\\wuesi\\IdeaProjects\\Hipodromo\\src\\Utilities\\Donky.png"));
+                        "C:\\Users\\235921\\Documents\\Github\\src\\Utilities\\Donky.png"));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
             this.getGraphics().drawImage(runwayImage, 0, currentYAxis + 1, this);
-            this.getGraphics().drawImage(horseImage, 0, currentYAxis+1, this);
+            this.getGraphics().drawImage(horseImage, 0, currentYAxis + 1, this);
 
             currentYAxis += 100;
         }
@@ -107,14 +117,14 @@ public class GUI extends JFrame {
 
             try {
                 runwayImage = ImageIO.read(new File("" +
-                        "C:\\Users\\wuesi\\IdeaProjects\\Hipodromo\\src\\Utilities\\C" + paintedHorse + ".png"));
+                        "C:\\Users\\235921\\Documents\\Github\\src\\Utilities\\C" + paintedHorse + ".png"));
                 horseImage = ImageIO.read(new File("" +
-                        "C:\\Users\\wuesi\\IdeaProjects\\Hipodromo\\src\\Utilities\\Horse.png"));
+                        "C:\\Users\\235921\\Documents\\Github\\src\\Utilities\\Horse.png"));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
             this.getGraphics().drawImage(runwayImage, 0, currentYAxis, this);
-            this.getGraphics().drawImage(horseImage, 0, currentYAxis+1, this);
+            this.getGraphics().drawImage(horseImage, 0, currentYAxis + 1, this);
             currentYAxis += 100;
         }
 
@@ -122,14 +132,14 @@ public class GUI extends JFrame {
 
             try {
                 runwayImage = ImageIO.read(new File("" +
-                        "C:\\Users\\wuesi\\IdeaProjects\\Hipodromo\\src\\Utilities\\P" + paintedHorse + ".png"));
+                        "C:\\Users\\235921\\Documents\\Github\\src\\Utilities\\P" + paintedHorse + ".png"));
                 horseImage = ImageIO.read(new File("" +
-                        "C:\\Users\\wuesi\\IdeaProjects\\Hipodromo\\src\\Utilities\\Unicorn.png"));
+                        "C:\\Users\\235921\\Documents\\Github\\src\\Utilities\\Unicorn.png"));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
             this.getGraphics().drawImage(runwayImage, 0, currentYAxis, this);
-            this.getGraphics().drawImage(horseImage, 0, currentYAxis+1, this);
+            this.getGraphics().drawImage(horseImage, 0, currentYAxis + 1, this);
             currentYAxis += 100;
         }
     }
