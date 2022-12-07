@@ -17,30 +17,38 @@ public class GUI extends JFrame {
     private short yAxisHorse = 20;
     String currentRelativePath;
 
+    private JLabel sequentialLabel, concurrentLabel, paralelLabel;
+
+    private JPanel sequentialPanel, concurrentPanel, parallelPanel;
+
     public GUI() {
         super("Hippodrome");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new GridLayout(0, 1));
         setSize(250, 200);
         setVisible(true);
-        setResizable(false);
+//        setResizable(false);
 
         currentRelativePath = Paths.get("").toAbsolutePath().toString();
-        JPanel sequentialPanel = new JPanel();
-        JPanel concurrentPanel = new JPanel();
-        JPanel parallelPanel = new JPanel();
+        sequentialPanel = new JPanel();
+        concurrentPanel = new JPanel();
+        parallelPanel = new JPanel();
 
-        sequentialPanel.add(new JLabel("Secunecial"));
+        sequentialLabel = new JLabel("Secunecial");
+        concurrentLabel = new JLabel("Concurrent");
+        paralelLabel = new JLabel("Parallel");
+
+        sequentialPanel.add(sequentialLabel);
         JSpinner secuencialSpinner = new JSpinner(new SpinnerNumberModel(2, 1, 3, 1));
         sequentialPanel.add(secuencialSpinner);
 
 
-        concurrentPanel.add(new JLabel("Concurrent"));
+        concurrentPanel.add(concurrentLabel);
         JSpinner concurrentSpinner = new JSpinner(new SpinnerNumberModel(2, 1, 3, 1));
         concurrentPanel.add(concurrentSpinner);
 
 
-        parallelPanel.add(new JLabel("Parallel"));
+        parallelPanel.add(paralelLabel);
         JSpinner parallelSpinner = new JSpinner(new SpinnerNumberModel(2, 1, 3, 1));
         parallelPanel.add(parallelSpinner);
 
@@ -59,7 +67,8 @@ public class GUI extends JFrame {
     }
 
     @Override
-    public void paint(Graphics g) {
+    public void paint (Graphics g) {
+
         if (isRunning) {
             paintLocations();
         }
@@ -98,9 +107,9 @@ public class GUI extends JFrame {
                     getGraphics().drawImage(unicornBuffer, value, yAxisHorse, this);
                     break;
             }
-            yAxisHorse+=100;
+            yAxisHorse += 100;
         });
-        yAxisHorse=20;
+        yAxisHorse = 20;
     }
 
     private void setupGUI() {
