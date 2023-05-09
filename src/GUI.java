@@ -5,6 +5,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Random;
 import java.util.TreeMap;
 
 
@@ -16,68 +17,59 @@ public class GUI extends JFrame {
     private BufferedImage runwayBuffer, donkeyBuffer, horseBuffer, unicornBuffer;
     private short yAxisHorse = 20;
     String currentRelativePath;
+    private JPanel logPanel, matrizSizePanel;
 
-    private JLabel sequentialLabel, concurrentLabel, paralelLabel;
+    private JLabel matrizSizeLabel;
 
-    private JPanel sequentialPanel, concurrentPanel, parallelPanel;
+    JTextField matrizSizeTextField;
+    public int[][] matrizA, matrizB;
+
+    private Random random;
 
     public GUI() {
         super("Hippodrome");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new GridLayout(0, 1));
-        setSize(250, 200);
+        setSize(400, 400);
         setVisible(true);
-//        setResizable(false);
-
+        setResizable(false);
+        random = new Random();
         currentRelativePath = Paths.get("").toAbsolutePath().toString();
-        sequentialPanel = new JPanel();
-        concurrentPanel = new JPanel();
-        parallelPanel = new JPanel();
 
-        sequentialLabel = new JLabel("Secunecial");
-        concurrentLabel = new JLabel("Concurrent");
-        paralelLabel = new JLabel("Parallel");
+        logPanel = new JPanel();
+        matrizSizePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
-        sequentialPanel.add(sequentialLabel);
-        JSpinner secuencialSpinner = new JSpinner(new SpinnerNumberModel(2, 1, 3, 1));
-        sequentialPanel.add(secuencialSpinner);
-
-
-        concurrentPanel.add(concurrentLabel);
-        JSpinner concurrentSpinner = new JSpinner(new SpinnerNumberModel(2, 1, 3, 1));
-        concurrentPanel.add(concurrentSpinner);
-
-
-        parallelPanel.add(paralelLabel);
-        JSpinner parallelSpinner = new JSpinner(new SpinnerNumberModel(2, 1, 3, 1));
-        parallelPanel.add(parallelSpinner);
-
+        matrizSizeTextField = new JTextField("0", 15);
+        matrizSizeLabel = new JLabel("Matriz size");
+        matrizSizePanel.add(matrizSizeLabel);
+        matrizSizePanel.add(matrizSizeTextField);
 
         Button starRide = new Button("Start");
         starRide.addActionListener((actionEvent) -> {
             isRunning = true;
-            GetSpinnersValues(secuencialSpinner, concurrentSpinner, parallelSpinner);
+            sequentialSpinnerValue = 1;
+            concurrentSpinnerValue = 1;
+            parallelSpinnerValue = 1;
+            fillMatrizes();
             setupGUI();
+            paintLocations();
         });
 
-        add(sequentialPanel);
-        add(concurrentPanel);
-        add(parallelPanel);
+        add(logPanel);
+        add(matrizSizePanel);
         add(starRide);
     }
 
-    @Override
-    public void paint (Graphics g) {
 
-        if (isRunning) {
-            paintLocations();
-        }
-    }
+//    public void paint(Graphics g) {
+//        if (isRunning) {
+//            paintLocations();
+//        }
+//    }
 
     public void paintLocations() {
         this.getGraphics().drawImage(runwayBuffer, 9, 31, this);
         riders.forEach((key, value) -> {
-
             switch (key) {
                 case "A1":
                     getGraphics().drawImage(donkeyBuffer, value, yAxisHorse, this);
@@ -183,9 +175,22 @@ public class GUI extends JFrame {
 
     }
 
-    private void GetSpinnersValues(JSpinner secuencialSpinner, JSpinner concurrentSpinner, JSpinner parallelSpinner) {
-        sequentialSpinnerValue = (int) secuencialSpinner.getValue();
-        concurrentSpinnerValue = (int) concurrentSpinner.getValue();
-        parallelSpinnerValue = (int) parallelSpinner.getValue();
+    private void fillMatrizes() {
+        int size = Integer.parseInt(matrizSizeTextField.getText().trim());
+        matrizA = new int[size][size];
+        matrizB = new int[size][size];
+
+        for (int row = 0; row < size; row++) {
+            for (int column = 0; column < size; column++) {
+                matrizA[row][column] = random.nextInt(9 - 1) + 1;
+            }
+        }
+
+        for (int row = 0; row < size; row++) {
+            for (int column = 0; column < size; column++) {
+                matrizB[row][column] = random.nextInt(9 - 1) + 1;
+            }
+        }
     }
+
 }

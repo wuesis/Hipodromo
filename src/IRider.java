@@ -1,4 +1,4 @@
-public interface IRider {
+public interface IRider extends Runnable {
 
     void Ride();
 
