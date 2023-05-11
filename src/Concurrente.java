@@ -60,7 +60,7 @@ class MatrixMultiplicationTask implements Runnable {
     }
 
     public void run() {
-        System.out.println("Entrada al runnable");
+        System.out.println("Hilo levantado para procesar la matriz en el pocision: "+start+" a la "+end);
         int rowsA = matrixA.length;
         int colsB = matrixB[0].length;
 
@@ -74,7 +74,7 @@ class MatrixMultiplicationTask implements Runnable {
 
         int value = GUI.riders.get("B") + (1100/threadQty);
         GUI.riders.replace("B", value);
-        System.out.println("Fin del runable");
+        System.out.println("Fin del hilo levantado para procesar la matriz en el pocision: "+start+" a la "+end);
     }
 }
 

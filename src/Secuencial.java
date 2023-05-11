@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.Random;
 
 public class Secuencial implements IRider, Runnable {
@@ -26,17 +27,15 @@ public class Secuencial implements IRider, Runnable {
         for (int i = 0; i < m; i++) {
             posicion = (float) (i+1)*1100/matrizSize;
             GUI.riders.replace("A", (int) posicion);
-            System.out.println(i);
             for (int j = 0; j < n; j++) {
                 for (int k = 0; k < o; k++) {
                     temporalMatriz[i][j] += GUI.matrizA[i][k] * GUI.matrizB[k][j];
+
                 }
             }
         }
 
         GUI.riders.replace("A", (int) posicion);
-
-        System.out.println(GUI.riders.get("A"));
         long endTime = System.currentTimeMillis();
         long elapsedTime = endTime - startTime;
         GUI.secuentialTimeField.setText(elapsedTime + "ms");

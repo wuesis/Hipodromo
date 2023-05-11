@@ -1,6 +1,8 @@
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -23,6 +25,8 @@ public class GUI extends JFrame implements Runnable {
     public static JTextField matrizSizeTextField, secuentialTimeField, concurrentTimeField;
     public static int[][] matrizA, matrizB;
 
+    private JButton secuetialButton, concurrentButton;
+
     private Random random;
 
     Executor executor;
@@ -39,7 +43,7 @@ public class GUI extends JFrame implements Runnable {
         random = new Random();
 
         matrizSizePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        matrizSizeTextField = new JTextField("0", 15);
+        matrizSizeTextField = new JTextField("1000", 15);
         matrizSizeLabel = new JLabel("Matriz size");
         matrizSizePanel.add(matrizSizeLabel);
         matrizSizePanel.add(matrizSizeTextField);
@@ -94,16 +98,20 @@ public class GUI extends JFrame implements Runnable {
         optionPanle = new JPanel();
         optionPanle.setLayout(new FlowLayout());
 
+        secuetialButton = new JButton("Start secuential");
         secuentialTimeLabel = new JLabel("Secuential Time");
         secuentialTimeField = new JTextField("                         ");
         secuentialTimeField.setEditable(false);
 
+        concurrentButton = new JButton("Start concurrent");
         concurrentTimeLabel = new JLabel("Concurrent Time");
         concurrentTimeField = new JTextField("                         ");
         concurrentTimeField.setEditable(false);
 
+        optionPanle.add(secuetialButton);
         optionPanle.add(secuentialTimeLabel);
         optionPanle.add(secuentialTimeField);
+        optionPanle.add(concurrentButton);
         optionPanle.add(concurrentTimeLabel);
         optionPanle.add(concurrentTimeField);
         add(optionPanle, BorderLayout.NORTH);
@@ -180,28 +188,23 @@ public class GUI extends JFrame implements Runnable {
 
     @Override
     public void run() {
-//        Secuencial secuentialProcess = new Secuencial();
-//        executor = new Executor();
-//        executor.setProcess(secuentialProcess);
-//        executor.StartRide();
-//
-//
-//        while (true) {
-//            repaint();
-//            try {
-//                Thread.sleep(5);
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
 
-        Concurrente concurrentProcess = new Concurrente();
-        executor = new Executor();
-        executor.setProcess(concurrentProcess);
-        executor.StartRide();
-        isRunning = true;
+        secuetialButton.addActionListener((actionEvent) -> {
+            Secuencial secuentialProcess = new Secuencial();
+            executor = new Executor();
+            executor.setProcess(secuentialProcess);
+            executor.StartRide();
+        });
 
-        while (isRunning) {
+        concurrentButton.addActionListener((actionEvent)->{
+            Concurrente concurrentProcess = new Concurrente();
+            executor = new Executor();
+            executor.setProcess(concurrentProcess);
+            executor.StartRide();
+            isRunning = true;
+        });
+
+        while (true) {
             repaint();
             try {
                 Thread.sleep(5);
