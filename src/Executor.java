@@ -1,13 +1,15 @@
 public class Executor {
 
-    private IRider _IRider;
+    private IRider process;
 
+    public Executor(){
 
-    public Executor(IRider rider){
-        _IRider = rider;
+    }
+    public void setProcess(IRider process){
+        this.process= process;
     }
 
     public void StartRide(){
-        _IRider.Ride();
+        process.Ride();
     }
 }

@@ -9,22 +9,23 @@ import java.util.Random;
 import java.util.TreeMap;
 
 
-public class GUI extends JFrame {
+public class GUI extends JFrame implements Runnable {
 
     public static TreeMap<String, Integer> riders = new TreeMap<>();
-    public int sequentialSpinnerValue, concurrentSpinnerValue, parallelSpinnerValue;
-    private boolean isRunning = false;
+    public static boolean isRunning = false;
     private BufferedImage runwayBuffer, donkeyBuffer, horseBuffer, unicornBuffer;
     private short yAxisHorse = 20;
     String currentRelativePath;
-    private JPanel logPanel, matrizSizePanel;
+    private JPanel matrizSizePanel, optionPanle, optionBodyPanel;
 
-    private JLabel matrizSizeLabel;
+    public static JLabel matrizSizeLabel, secuentialTimeLabel, concurrentTimeLabel;
 
-    JTextField matrizSizeTextField;
-    public int[][] matrizA, matrizB;
+    public static JTextField matrizSizeTextField, secuentialTimeField, concurrentTimeField;
+    public static int[][] matrizA, matrizB;
 
     private Random random;
+
+    Executor executor;
 
     public GUI() {
         super("Hippodrome");
@@ -33,146 +34,130 @@ public class GUI extends JFrame {
         setSize(400, 400);
         setVisible(true);
         setResizable(false);
-        random = new Random();
+
         currentRelativePath = Paths.get("").toAbsolutePath().toString();
+        random = new Random();
 
-        logPanel = new JPanel();
         matrizSizePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-
         matrizSizeTextField = new JTextField("0", 15);
         matrizSizeLabel = new JLabel("Matriz size");
         matrizSizePanel.add(matrizSizeLabel);
         matrizSizePanel.add(matrizSizeTextField);
 
-        Button starRide = new Button("Start");
-        starRide.addActionListener((actionEvent) -> {
+        Button starRideButton = new Button("Start");
+
+        starRideButton.addActionListener((actionEvent) -> {
             isRunning = true;
-            sequentialSpinnerValue = 1;
-            concurrentSpinnerValue = 1;
-            parallelSpinnerValue = 1;
             fillMatrizes();
             setupGUI();
             paintLocations();
+            Thread thread = new Thread(this);
+            thread.start();
         });
 
-        add(logPanel);
         add(matrizSizePanel);
-        add(starRide);
+        add(starRideButton);
     }
 
-
-//    public void paint(Graphics g) {
-//        if (isRunning) {
-//            paintLocations();
-//        }
-//    }
+    public void paint(Graphics g) {
+        if (isRunning) {
+            paintLocations();
+        }
+    }
 
     public void paintLocations() {
-        this.getGraphics().drawImage(runwayBuffer, 9, 31, this);
+        optionPanle.repaint();
+        optionBodyPanel.getGraphics().drawImage(runwayBuffer, 9, 31, this);
         riders.forEach((key, value) -> {
             switch (key) {
-                case "A1":
-                    getGraphics().drawImage(donkeyBuffer, value, yAxisHorse, this);
+                case "A":
+                    optionBodyPanel.getGraphics().drawImage(donkeyBuffer, value, yAxisHorse, this);
                     break;
-                case "A2":
-                    getGraphics().drawImage(donkeyBuffer, value, yAxisHorse, this);
+                case "B":
+                    optionBodyPanel.getGraphics().drawImage(horseBuffer, value, yAxisHorse, this);
                     break;
-                case "A3":
-                    getGraphics().drawImage(donkeyBuffer, value, yAxisHorse, this);
-                    break;
-                case "B1":
-                    getGraphics().drawImage(horseBuffer, value, yAxisHorse, this);
-                    break;
-                case "B2":
-                    getGraphics().drawImage(horseBuffer, value, yAxisHorse, this);
-                    break;
-                case "B3":
-                    getGraphics().drawImage(horseBuffer, value, yAxisHorse, this);
-                    break;
-                case "C1":
-                    getGraphics().drawImage(unicornBuffer, value, yAxisHorse, this);
-                    break;
-                case "C2":
-                    getGraphics().drawImage(unicornBuffer, value, yAxisHorse, this);
-                    break;
-                case "C3":
-                    getGraphics().drawImage(unicornBuffer, value, yAxisHorse, this);
+                case "C":
+                    optionBodyPanel.getGraphics().drawImage(unicornBuffer, value, yAxisHorse, this);
                     break;
             }
-            yAxisHorse += 100;
+            yAxisHorse += 90;
         });
         yAxisHorse = 20;
     }
 
     private void setupGUI() {
-        this.removeAll();
-        setSize(1200 + 17, (sequentialSpinnerValue + concurrentSpinnerValue + parallelSpinnerValue) * 100 + 39);
+        setSize(1200 + 17, 400);
+        this.getContentPane().removeAll();
+        this.revalidate();
+        setLayout(new BorderLayout());
+
+        optionPanle = new JPanel();
+        optionPanle.setLayout(new FlowLayout());
+
+        secuentialTimeLabel = new JLabel("Secuential Time");
+        secuentialTimeField = new JTextField("                         ");
+        secuentialTimeField.setEditable(false);
+
+        concurrentTimeLabel = new JLabel("Concurrent Time");
+        concurrentTimeField = new JTextField("                         ");
+        concurrentTimeField.setEditable(false);
+
+        optionPanle.add(secuentialTimeLabel);
+        optionPanle.add(secuentialTimeField);
+        optionPanle.add(concurrentTimeLabel);
+        optionPanle.add(concurrentTimeField);
+        add(optionPanle, BorderLayout.NORTH);
+
+        optionBodyPanel = new JPanel();
+        optionBodyPanel.setLayout(new FlowLayout());
+        add(optionBodyPanel, BorderLayout.CENTER);
+        //Setup buffers
         runwayBuffer = new BufferedImage(1200, getHeight(), BufferedImage.TYPE_INT_ARGB);
         donkeyBuffer = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB);
         horseBuffer = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB);
         unicornBuffer = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB);
+        //Set initial position and name
+        riders.put("A", 0);
+        riders.put("B", 0);
+        riders.put("C", 0);
 
-        fillRidersHasMap();
-        setRoads();
-        setHorses();
-//        JOptionPane.showMessageDialog(null, new JLabel(new ImageIcon(runwayImage)));
+        setupRoads();
+        setupHorses();
     }
 
-    private void setRoads() {
+    private void setupRoads() {
         short currentYAxis = 0;
 
-        for (short paintedHorse = 1; paintedHorse <= sequentialSpinnerValue; paintedHorse++) {
-            try {
-                runwayBuffer.getGraphics().drawImage(ImageIO.read(new File(currentRelativePath + "\\src\\Utilities\\S" + paintedHorse + ".png")), 0, currentYAxis, this);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            currentYAxis += 100;
-        }
-
-        for (short paintedHorse = 1; paintedHorse <= concurrentSpinnerValue; paintedHorse++) {
-            try {
-                runwayBuffer.getGraphics().drawImage(ImageIO.read(new File(currentRelativePath + "\\src\\Utilities\\C" + paintedHorse + ".png")), 0, currentYAxis, this);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            currentYAxis += 100;
-        }
-
-        for (short paintedHorse = 1; paintedHorse <= parallelSpinnerValue; paintedHorse++) {
-            try {
-                runwayBuffer.getGraphics().drawImage(ImageIO.read(new File(currentRelativePath + "\\src\\Utilities\\P" + paintedHorse + ".png")), 0, currentYAxis, this);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            currentYAxis += 100;
-        }
-    }
-
-    private void setHorses() {
         try {
-            donkeyBuffer.getGraphics().drawImage(ImageIO.read(new File(currentRelativePath + "\\src\\Utilities\\Donkey.png")), 0, 0, this);
-            horseBuffer.getGraphics().drawImage(ImageIO.read(new File(currentRelativePath + "\\src\\Utilities\\Horse.png")), 0, 0, this);
-            unicornBuffer.getGraphics().drawImage(ImageIO.read(new File(currentRelativePath + "\\src\\Utilities\\Unicorn.png")), 0, 0, this);
+            runwayBuffer.getGraphics().drawImage(ImageIO.read(new File(currentRelativePath + "/src/Utilities/S1.png")), 0, currentYAxis, this);
+            currentYAxis += 100;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            runwayBuffer.getGraphics().drawImage(ImageIO.read(new File(currentRelativePath + "/src/Utilities/C1.png")), 0, currentYAxis, this);
+            currentYAxis += 100;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            runwayBuffer.getGraphics().drawImage(ImageIO.read(new File(currentRelativePath + "/src/Utilities/P1.png")), 0, currentYAxis, this);
+            currentYAxis += 100;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void fillRidersHasMap() {
-
-        for (int HorsesQty = 1; HorsesQty <= sequentialSpinnerValue; HorsesQty++) {
-            riders.put("A" + HorsesQty, 0);
+    private void setupHorses() {
+        try {
+            donkeyBuffer.getGraphics().drawImage(ImageIO.read(new File(currentRelativePath + "/src/Utilities/Donkey.png")), 0, 0, this);
+            horseBuffer.getGraphics().drawImage(ImageIO.read(new File(currentRelativePath + "/src/Utilities/Horse.png")), 0, 0, this);
+            unicornBuffer.getGraphics().drawImage(ImageIO.read(new File(currentRelativePath + "/src/Utilities/Unicorn.png")), 0, 0, this);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-
-        for (int HorsesQty = 1; HorsesQty <= concurrentSpinnerValue; HorsesQty++) {
-            riders.put("B" + HorsesQty, 0);
-        }
-
-        for (int HorsesQty = 1; HorsesQty <= parallelSpinnerValue; HorsesQty++) {
-            riders.put("C" + HorsesQty, 0);
-        }
-
     }
 
     private void fillMatrizes() {
@@ -193,4 +178,36 @@ public class GUI extends JFrame {
         }
     }
 
+    @Override
+    public void run() {
+//        Secuencial secuentialProcess = new Secuencial();
+//        executor = new Executor();
+//        executor.setProcess(secuentialProcess);
+//        executor.StartRide();
+//
+//
+//        while (true) {
+//            repaint();
+//            try {
+//                Thread.sleep(5);
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
+
+        Concurrente concurrentProcess = new Concurrente();
+        executor = new Executor();
+        executor.setProcess(concurrentProcess);
+        executor.StartRide();
+        isRunning = true;
+
+        while (isRunning) {
+            repaint();
+            try {
+                Thread.sleep(5);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 }
