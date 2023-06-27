@@ -1,66 +1,57 @@
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.UnknownHostException;
 import java.nio.file.Paths;
+import java.rmi.Naming;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
 import java.util.Random;
 import java.util.TreeMap;
 
 
 public class GUI extends JFrame implements Runnable {
 
-    public static TreeMap<String, Integer> riders = new TreeMap<>();
-    public static boolean isRunning = false;
     private BufferedImage runwayBuffer, donkeyBuffer, horseBuffer, unicornBuffer;
     private short yAxisHorse = 20;
-    String currentRelativePath;
-    private JPanel matrizSizePanel, optionPanle, optionBodyPanel;
-
-    public static JLabel matrizSizeLabel, secuentialTimeLabel, concurrentTimeLabel;
-
-    public static JTextField matrizSizeTextField, secuentialTimeField, concurrentTimeField;
-    public static int[][] matrizA, matrizB;
-
-    private JButton secuetialButton, concurrentButton;
-
+    private String currentRelativePath = "";
+    private int matrizSize = 0, serverPort = 0;
+    private JPanel optionPanle, roadPanel;
+    private JLabel secuentialTimeLabel, concurrentTimeLabel, paralelTimeLabel;
+    private JButton secuetialButton, concurrentButton, paralelButton, resetButton;
     private Random random;
+    private Executor executor;
 
-    Executor executor;
+    public static int[][] matrizA, matrizB;
+    public static TreeMap<String, Integer> riders = new TreeMap<>();
+    public static boolean isRunning = false;
+    public static JTextField secuentialTimeField, concurrentTimeField, paralelTimeField;
 
-    public GUI() {
+    public GUI(int metrixSize, int serverPort) {
+
         super("Hippodrome");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new GridLayout(0, 1));
-        setSize(400, 400);
+        setLocationRelativeTo(null);
         setVisible(true);
         setResizable(false);
 
+        //Initialice variables
         currentRelativePath = Paths.get("").toAbsolutePath().toString();
         random = new Random();
+        this.matrizSize = metrixSize;
+        this.serverPort = serverPort;
+        isRunning = true;
+        fillMatrizes();
+        setupGUI();
+        Thread thread = new Thread(this);
+        thread.start();
 
-        matrizSizePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        matrizSizeTextField = new JTextField("1000", 15);
-        matrizSizeLabel = new JLabel("Matriz size");
-        matrizSizePanel.add(matrizSizeLabel);
-        matrizSizePanel.add(matrizSizeTextField);
 
-        Button starRideButton = new Button("Start");
-
-        starRideButton.addActionListener((actionEvent) -> {
-            isRunning = true;
-            fillMatrizes();
-            setupGUI();
-            paintLocations();
-            Thread thread = new Thread(this);
-            thread.start();
-        });
-
-        add(matrizSizePanel);
-        add(starRideButton);
     }
 
     public void paint(Graphics g) {
@@ -71,17 +62,17 @@ public class GUI extends JFrame implements Runnable {
 
     public void paintLocations() {
         optionPanle.repaint();
-        optionBodyPanel.getGraphics().drawImage(runwayBuffer, 9, 31, this);
+        roadPanel.getGraphics().drawImage(runwayBuffer, 0, 31, this);
         riders.forEach((key, value) -> {
             switch (key) {
                 case "A":
-                    optionBodyPanel.getGraphics().drawImage(donkeyBuffer, value, yAxisHorse, this);
+                    roadPanel.getGraphics().drawImage(donkeyBuffer, value, yAxisHorse, this);
                     break;
                 case "B":
-                    optionBodyPanel.getGraphics().drawImage(horseBuffer, value, yAxisHorse, this);
+                    roadPanel.getGraphics().drawImage(horseBuffer, value, yAxisHorse, this);
                     break;
                 case "C":
-                    optionBodyPanel.getGraphics().drawImage(unicornBuffer, value, yAxisHorse, this);
+                    roadPanel.getGraphics().drawImage(unicornBuffer, value, yAxisHorse, this);
                     break;
             }
             yAxisHorse += 90;
@@ -98,6 +89,8 @@ public class GUI extends JFrame implements Runnable {
         optionPanle = new JPanel();
         optionPanle.setLayout(new FlowLayout());
 
+        resetButton = new JButton("Reset");
+
         secuetialButton = new JButton("Start secuential");
         secuentialTimeLabel = new JLabel("Secuential Time");
         secuentialTimeField = new JTextField("                         ");
@@ -108,17 +101,26 @@ public class GUI extends JFrame implements Runnable {
         concurrentTimeField = new JTextField("                         ");
         concurrentTimeField.setEditable(false);
 
+        paralelButton = new JButton("Start paralel");
+        paralelTimeLabel = new JLabel("Paralel Time");
+        paralelTimeField = new JTextField("                         ");
+        paralelTimeField.setEditable(false);
+
+        optionPanle.add(resetButton);
         optionPanle.add(secuetialButton);
         optionPanle.add(secuentialTimeLabel);
         optionPanle.add(secuentialTimeField);
         optionPanle.add(concurrentButton);
         optionPanle.add(concurrentTimeLabel);
         optionPanle.add(concurrentTimeField);
+        optionPanle.add(paralelButton);
+        optionPanle.add(paralelTimeLabel);
+        optionPanle.add(paralelTimeField);
         add(optionPanle, BorderLayout.NORTH);
 
-        optionBodyPanel = new JPanel();
-        optionBodyPanel.setLayout(new FlowLayout());
-        add(optionBodyPanel, BorderLayout.CENTER);
+        roadPanel = new JPanel();
+        roadPanel.setLayout(new FlowLayout());
+        add(roadPanel, BorderLayout.CENTER);
         //Setup buffers
         runwayBuffer = new BufferedImage(1200, getHeight(), BufferedImage.TYPE_INT_ARGB);
         donkeyBuffer = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB);
@@ -169,7 +171,7 @@ public class GUI extends JFrame implements Runnable {
     }
 
     private void fillMatrizes() {
-        int size = Integer.parseInt(matrizSizeTextField.getText().trim());
+        int size = matrizSize;
         matrizA = new int[size][size];
         matrizB = new int[size][size];
 
@@ -189,25 +191,63 @@ public class GUI extends JFrame implements Runnable {
     @Override
     public void run() {
 
-        secuetialButton.addActionListener((actionEvent) -> {
-            Secuencial secuentialProcess = new Secuencial();
-            executor = new Executor();
-            executor.setProcess(secuentialProcess);
-            executor.StartRide();
+        resetButton.addActionListener((actionEvent) -> {
+            secuentialTimeField.setText("");
+            concurrentTimeField.setText("");
+            paralelTimeField.setText("");
+            riders.replace("A", 0);
+            riders.replace("B", 0);
+            riders.replace("C", 0);
+            paintLocations();
         });
 
-        concurrentButton.addActionListener((actionEvent)->{
-            Concurrente concurrentProcess = new Concurrente();
-            executor = new Executor();
-            executor.setProcess(concurrentProcess);
-            executor.StartRide();
-            isRunning = true;
+        secuetialButton.addActionListener((actionEvent) -> {
+            try {
+                Secuencial secuentialProcess = new Secuencial();
+                executor = new Executor();
+                executor.setProcess(secuentialProcess);
+                executor.StartRide();
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+
         });
+
+        concurrentButton.addActionListener((actionEvent) -> {
+            try {
+                Concurrente concurrentProcess = new Concurrente();
+                executor = new Executor();
+                executor.setProcess(concurrentProcess);
+                executor.StartRide();
+                isRunning = true;
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+        });
+
+        paralelButton.addActionListener((actionEvent) -> {
+            try {
+                String serverIp = InetAddress.getLocalHost().getHostAddress();
+                LocateRegistry.createRegistry(serverPort);
+                System.setProperty("java.rmi.server.hostname", serverIp);
+                Naming.rebind("//" + serverIp + ":" + serverPort + "//RMIServer", new Paralel(matrizA, matrizB));
+                System.out.println("Servidor en linea "+serverIp+":"+serverPort);
+            } catch (UnknownHostException e) {
+                throw new RuntimeException(e);
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+            JOptionPane.showMessageDialog(null, "¡Nada implementado!", "Alerta", JOptionPane.WARNING_MESSAGE);
+        });
+
 
         while (true) {
             repaint();
             try {
                 Thread.sleep(5);
+
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

@@ -9,7 +9,7 @@ public class main {
         Runnable initialFrame = new Runnable() {
             @Override
             public void run() {
-                new GUI();
+                new ConfigGUI();
             }
         };
 

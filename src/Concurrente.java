@@ -29,6 +29,7 @@ public class Concurrente implements IRider {
 
         executor.shutdown();
         while (!executor.isTerminated()) {
+
         }
 
         long endTime = System.currentTimeMillis();
@@ -36,6 +37,16 @@ public class Concurrente implements IRider {
         GUI.concurrentTimeField.setText(elapsedTime + "ms");
         System.out.println("El hilo concurrente ha estado en ejecución durante " + elapsedTime + " milisegundos.");
         GUI.isRunning = false;
+
+//        for (int i = 0; i < temporalMatriz.length; i++) {
+//            for (int j = 0; j < temporalMatriz[i].length; j++) {
+//                System.out.print(temporalMatriz[i][j] + " ");
+//            }
+//            System.out.println();
+//        }
+//        System.out.println("\n");
+//        System.out.println("\n");
+//        System.out.println("\n");
     }
 
     @Override
@@ -48,9 +59,9 @@ class MatrixMultiplicationTask implements Runnable {
     private int[][] matrixA;
     private int[][] matrixB;
     private int[][] result;
-    private int start,end, threadQty;
+    private int start, end, threadQty;
 
-    public MatrixMultiplicationTask(int[][] matrixA, int[][] matrixB, int[][] result, int start, int end,int threadQty) {
+    public MatrixMultiplicationTask(int[][] matrixA, int[][] matrixB, int[][] result, int start, int end, int threadQty) {
         this.matrixA = matrixA;
         this.matrixB = matrixB;
         this.result = result;
@@ -60,7 +71,7 @@ class MatrixMultiplicationTask implements Runnable {
     }
 
     public void run() {
-        System.out.println("Hilo levantado para procesar la matriz en el pocision: "+start+" a la "+end);
+        System.out.println("Hilo levantado para procesar la matriz en el pocision: " + start + " a la " + end);
         int rowsA = matrixA.length;
         int colsB = matrixB[0].length;
 
@@ -72,9 +83,9 @@ class MatrixMultiplicationTask implements Runnable {
             }
         }
 
-        int value = GUI.riders.get("B") + (1100/threadQty);
+        int value = GUI.riders.get("B") + (1100 / threadQty);
         GUI.riders.replace("B", value);
-        System.out.println("Fin del hilo levantado para procesar la matriz en el pocision: "+start+" a la "+end);
+        System.out.println("Fin del hilo levantado para procesar la matriz en el pocision: " + start + " a la " + end);
     }
 }
 

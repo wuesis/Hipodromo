@@ -41,6 +41,17 @@ public class Secuencial implements IRider, Runnable {
         GUI.secuentialTimeField.setText(elapsedTime + "ms");
         System.out.println("El proceso secuencial tuvo una durcion de: " + elapsedTime + " milisegundos.");
         GUI.isRunning = false;
+
+
+//        for (int i = 0; i < temporalMatriz.length; i++) {
+//            for (int j = 0; j < temporalMatriz[i].length; j++) {
+//                System.out.print(temporalMatriz[i][j] + " ");
+//            }
+//            System.out.println();
+//        }
+//        System.out.println("\n");
+//        System.out.println("\n");
+//        System.out.println("\n");
     }
 
 
