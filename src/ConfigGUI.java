@@ -20,13 +20,19 @@ public class ConfigGUI extends JFrame {
         JLabel Configuracion = new JLabel("Configuration");
 
         //Parte central del borderLayout
-        JPanel configurationPanel = new JPanel(new GridLayout(4, 1));
+        JPanel configurationPanel = new JPanel(new GridLayout(6, 1));
 
         JLabel matrizSizeLabel = new JLabel("Matriz Size:");
         configurationPanel.add(matrizSizeLabel);
 
         JTextField matrizSizeTextField = new JTextField(20);
         configurationPanel.add(matrizSizeTextField);
+
+        JLabel serverIpAddressLabel = new JLabel("Server ip address:");
+        configurationPanel.add(serverIpAddressLabel);
+
+        JTextField serverIpAddressField = new JTextField(20);
+        configurationPanel.add(serverIpAddressField);
 
         JLabel serverPortLabel = new JLabel("Server Port:");
         configurationPanel.add(serverPortLabel);
@@ -48,7 +54,7 @@ public class ConfigGUI extends JFrame {
 
         starRideButton.addActionListener((actionEvent) -> {
             this.setVisible(false);
-            new GUI(Integer.parseInt(matrizSizeTextField.getText().trim()),  Integer.parseInt(serverPortField.getText().trim()));
+            new GUI(Integer.parseInt(matrizSizeTextField.getText().trim()),  Integer.parseInt(serverPortField.getText().trim()), serverIpAddressField.getText());
         });
 
         pack();

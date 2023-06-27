@@ -19,7 +19,7 @@ public class GUI extends JFrame implements Runnable {
 
     private BufferedImage runwayBuffer, donkeyBuffer, horseBuffer, unicornBuffer;
     private short yAxisHorse = 20;
-    private String currentRelativePath = "";
+    private String currentRelativePath = "", serverIpAddress;
     private int matrizSize = 0, serverPort = 0;
     private JPanel optionPanle, roadPanel;
     private JLabel secuentialTimeLabel, concurrentTimeLabel, paralelTimeLabel;
@@ -32,7 +32,7 @@ public class GUI extends JFrame implements Runnable {
     public static boolean isRunning = false;
     public static JTextField secuentialTimeField, concurrentTimeField, paralelTimeField;
 
-    public GUI(int metrixSize, int serverPort) {
+    public GUI(int metrixSize, int serverPort, String serverIpAddress) {
 
         super("Hippodrome");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -45,6 +45,7 @@ public class GUI extends JFrame implements Runnable {
         random = new Random();
         this.matrizSize = metrixSize;
         this.serverPort = serverPort;
+        this.serverIpAddress = serverIpAddress;
         isRunning = true;
         fillMatrizes();
         setupGUI();
@@ -227,7 +228,7 @@ public class GUI extends JFrame implements Runnable {
 
         paralelButton.addActionListener((actionEvent) -> {
             try {
-                Paralel paralel = new Paralel(matrizA, matrizB);
+                Paralel paralel = new Paralel(matrizA, matrizB, serverIpAddress, serverPort);
                 executor = new Executor();
                 executor.setProcess(paralel);
                 executor.StartRide();
@@ -235,7 +236,6 @@ public class GUI extends JFrame implements Runnable {
             } catch (RemoteException e) {
                 System.out.println(e);
             }
-            JOptionPane.showMessageDialog(null, "¡Nada implementado!", "Alerta", JOptionPane.WARNING_MESSAGE);
         });
 
 

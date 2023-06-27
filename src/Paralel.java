@@ -9,16 +9,19 @@ import java.rmi.server.UnicastRemoteObject;
 
 public class Paralel extends UnicastRemoteObject implements IRider, Runnable {
 
-    private int[][] matrixA, matrixB;
-    int[][] resultRMI, resultServer;
+    private int[][] matrixA, matrixB, resultRMI, resultServer;
+    int serverPort;
+    String serverIpAdress;
     private volatile int start, end;
 
     private Thread llamadaRMI;
     IRemoteMarixResolver rmi;
 
-    protected Paralel(int[][] matrizA, int[][] matrizB) throws RemoteException {
+    protected Paralel(int[][] matrizA, int[][] matrizB,String serverIpAdress,int serverPort) throws RemoteException {
         this.matrixA = matrizA;
         this.matrixB = matrizB;
+        this.serverIpAdress = serverIpAdress;
+        this.serverPort = serverPort;
         llamadaRMI = new Thread(this::run);
     }
 
@@ -42,24 +45,21 @@ public class Paralel extends UnicastRemoteObject implements IRider, Runnable {
             }
             GUI.riders.replace("C", 500);
 
-
             synchronized (llamadaRMI){
                 while (resultRMI == null) {
                     llamadaRMI.wait();
+                    GUI.riders.replace("C", 1100);
                 }
             }
 
-            System.out.println("HolaHola");
-            GUI.riders.replace("C", 1100);
         } catch (Exception e) {
             System.out.println(e);
         }
 
         long endTime = System.currentTimeMillis();
         long elapsedTime = endTime - startTime;
-        GUI.paralelTimeField.setText(elapsedTime + "ms");
         System.out.println("El proceso paralelo tuvo una durcion de: " + elapsedTime + " milisegundos.");
-
+        GUI.paralelTimeField.setText(elapsedTime + "ms");
 
 //        int [][] result = new int[matrixA.length][matrixA[0].length];
 //
@@ -75,23 +75,29 @@ public class Paralel extends UnicastRemoteObject implements IRider, Runnable {
 //        }
 //
 //
-//        //Impresion del arreglo resultante
-//        for (int i = 0; i < result.length; i++) {
-//            for (int j = 0; j < result[i].length; j++) {
-//                System.out.print(result[i][j] + " ");
-//            }
-//            System.out.println();
-//        }
-//        System.out.println("\n");
-//        System.out.println("\n");
-//        System.out.println("\n");
+        //Impresion del arreglo resultante
+        for (int i = 0; i < resultRMI.length; i++) {
+            for (int j = 0; j < resultRMI[i].length; j++) {
+                System.out.print(resultRMI[i][j] + " ");
+            }
+            System.out.println();
+        }
+        for (int i = 0; i < resultServer.length; i++) {
+            for (int j = 0; j < resultServer[i].length; j++) {
+                System.out.print(resultServer[i][j] + " ");
+            }
+            System.out.println();
+        }
+        System.out.println("\n");
+        System.out.println("\n");
+        System.out.println("\n");
     }
 
     @Override
     public void run() {
         try {
 
-            rmi = (IRemoteMarixResolver) java.rmi.Naming.lookup("//192.168.1.241:7411//RMIServer");
+            rmi = (IRemoteMarixResolver) java.rmi.Naming.lookup("//"+serverIpAdress+":"+serverPort+"//RMIServer");
             resultRMI = rmi.matrixResolver(matrixA, matrixB, 0, (matrixA.length * matrixB.length / 2));
             synchronized (this){
                 notifyAll();
