@@ -12,10 +12,11 @@ public class MatrixResolverHub {
     public static void main(String[] args) {
 
         try {
+            int serverPort = Integer.parseInt(args[0]);
             String serverIp = InetAddress.getLocalHost().getHostAddress();
-            LocateRegistry.createRegistry(Integer.parseInt(args[0]));
+            LocateRegistry.createRegistry(serverPort);
             System.setProperty("java.rmi.server.hostname", serverIp);
-            Naming.rebind("//" + serverIp + ":" + Integer.parseInt(args[0] + "//RMIServer"),new MatrixResolverEntity());
+            Naming.rebind("//" + serverIp + ":" + serverPort + "//RMIServer",new MatrixResolverEntity());
             System.out.println("Servidor en linea "+serverIp+":"+args[0]);
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
