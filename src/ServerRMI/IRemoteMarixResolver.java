@@ -5,5 +5,5 @@ import java.rmi.RemoteException;
 
 public interface IRemoteMarixResolver extends Remote {
 
-    int [][] matrixResolver(int [][] matrixA,int [][] matrixB) throws RemoteException;
+    int [][] matrixResolver(int [][] matrixA,int [][] matrixB, int starIndex, int endIndex) throws RemoteException;
 }

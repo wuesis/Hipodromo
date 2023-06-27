@@ -227,17 +227,13 @@ public class GUI extends JFrame implements Runnable {
 
         paralelButton.addActionListener((actionEvent) -> {
             try {
-                String serverIp = InetAddress.getLocalHost().getHostAddress();
-                LocateRegistry.createRegistry(serverPort);
-                System.setProperty("java.rmi.server.hostname", serverIp);
-                Naming.rebind("//" + serverIp + ":" + serverPort + "//RMIServer", new Paralel(matrizA, matrizB));
-                System.out.println("Servidor en linea "+serverIp+":"+serverPort);
-            } catch (UnknownHostException e) {
-                throw new RuntimeException(e);
+                Paralel paralel = new Paralel(matrizA, matrizB);
+                executor = new Executor();
+                executor.setProcess(paralel);
+                executor.StartRide();
+                isRunning = true;
             } catch (RemoteException e) {
-                throw new RuntimeException(e);
-            } catch (MalformedURLException e) {
-                throw new RuntimeException(e);
+                System.out.println(e);
             }
             JOptionPane.showMessageDialog(null, "¡Nada implementado!", "Alerta", JOptionPane.WARNING_MESSAGE);
         });
