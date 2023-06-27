@@ -1,7 +1,9 @@
+import ServerRMI.IRemoteMarixResolver;
+
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-public class Paralel extends UnicastRemoteObject implements IRider, Runnable, IRemoteMarixResolver {
+public class Paralel extends UnicastRemoteObject implements IRider, Runnable {
 
     protected Paralel(int[][] matrizA, int[][] matrizB) throws RemoteException {
 
@@ -17,8 +19,4 @@ public class Paralel extends UnicastRemoteObject implements IRider, Runnable, IR
 
     }
 
-    @Override
-    public int[][] matrixResolver(int[][] matrixA, int[][] matrixB) throws RemoteException {
-        return new int[0][];
-    }
 }
